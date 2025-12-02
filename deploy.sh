@@ -18,6 +18,12 @@ if ! command -v python3 &> /dev/null; then
 fi
 echo "✅ Python 3 detectado"
 
+if ! python3 -c "import venv" &> /dev/null; then
+    echo -e "${RED}❌ El módulo 'venv' de Python no está instalado.${NC}"
+    echo -e "${YELLOW}   En sistemas Debian/Ubuntu, instálalo con: sudo apt-get install python3-venv${NC}"
+    exit 1
+fi
+
 # 2. Configuración del Entorno Virtual
 echo -e "\n${YELLOW}🛠️  Configurando entorno virtual...${NC}"
 
@@ -29,6 +35,12 @@ if [ ! -x "venv/bin/activate" ]; then
     fi
     echo "Creando nuevo entorno virtual..."
     python3 -m venv venv
+
+    # Verificar que el entorno se creó correctamente
+    if [ ! -f "venv/bin/pip" ]; then
+        echo -e "${RED}❌ Falló la creación del entorno virtual. Asegúrate de que 'python3-venv' está instalado.${NC}"
+        exit 1
+    fi
 else
     echo "Entorno virtual detectado y es válido."
 fi
