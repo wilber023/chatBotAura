@@ -82,3 +82,4 @@ chatbot-service/
 - Los modelos grandes requieren suficiente RAM/VRAM
 - Para producción, considera usar GPU para mejor rendimiento
 # chatBotAura
+# chatBotAura
