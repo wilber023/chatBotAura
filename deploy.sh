@@ -18,10 +18,30 @@ if ! command -v python3 &> /dev/null; then
 fi
 echo "✅ Python 3 detectado"
 
+# Determinar el gestor de paquetes y el paquete venv específico de la versión
+PKG_MANAGER="apt-get"
+if command -v apt &> /dev/null; then
+    PKG_MANAGER="apt"
+fi
+PYTHON_VERSION_MAJOR_MINOR=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+VENV_PACKAGE="python${PYTHON_VERSION_MAJOR_MINOR}-venv"
+
 if ! python3 -c "import venv" &> /dev/null; then
-    echo -e "${RED}❌ El módulo 'venv' de Python no está instalado.${NC}"
-    echo -e "${YELLOW}   En sistemas Debian/Ubuntu, instálalo con: sudo apt-get install python3-venv${NC}"
-    exit 1
+    echo -e "${RED}❌ El módulo 'venv' de Python no está instalado (se necesita el paquete '${VENV_PACKAGE}').${NC}"
+    read -p "¿Deseas que el script intente instalarlo usando 'sudo'? (s/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Ss]$ ]]; then
+        echo "Intentando instalar '${VENV_PACKAGE}' con '${PKG_MANAGER}'..."
+        if sudo ${PKG_MANAGER} update && sudo ${PKG_MANAGER} install -y ${VENV_PACKAGE}; then
+            echo -e "${GREEN}✅ '${VENV_PACKAGE}' instalado correctamente.${NC}"
+        else
+            echo -e "${RED}❌ Falló la instalación de '${VENV_PACKAGE}'. Por favor, instálalo manualmente.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${YELLOW}Instalación cancelada. El script no puede continuar sin 'python3-venv'.${NC}"
+        exit 1
+    fi
 fi
 
 # 2. Configuración del Entorno Virtual
@@ -38,7 +58,7 @@ if [ ! -x "venv/bin/activate" ]; then
 
     # Verificar que el entorno se creó correctamente
     if [ ! -f "venv/bin/pip" ]; then
-        echo -e "${RED}❌ Falló la creación del entorno virtual. Asegúrate de que 'python3-venv' está instalado.${NC}"
+        echo -e "${RED}❌ Falló la creación del entorno virtual. Asegúrate de que '${VENV_PACKAGE}' está instalado.${NC}"
         exit 1
     fi
 else
@@ -54,7 +74,7 @@ if [ ! -f "requirements.txt" ]; then
 fi
 
 echo "Actualizando pip..."
-./venv/bin/pip install --upgrade pip > /dev/null
+./venv/bin/pip install --upgrade pip > /dev/null 2>&1
 
 if ./venv/bin/pip install -r requirements.txt; then
     echo -e "${GREEN}✅ Dependencias instaladas correctamente.${NC}"
