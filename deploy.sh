@@ -20,20 +20,31 @@ echo "✅ Python 3 detectado"
 
 # 2. Configuración del Entorno Virtual
 echo -e "\n${YELLOW}🛠️  Configurando entorno virtual...${NC}"
-if [ ! -d "venv" ]; then
-    echo "Creando virtual environment..."
+
+# Si el activador del venv no existe o no es ejecutable, recreamos el entorno.
+if [ ! -x "venv/bin/activate" ]; then
+    if [ -d "venv" ]; then
+        echo "Entorno virtual existente parece corrupto o incompleto. Recreando..."
+        rm -rf venv
+    fi
+    echo "Creando nuevo entorno virtual..."
     python3 -m venv venv
 else
-    echo "Virtual environment ya existe."
+    echo "Entorno virtual detectado y es válido."
 fi
-
-# Activar entorno
-source venv/bin/activate
 
 # 3. Instalación de Dependencias
 echo -e "\n${YELLOW}📦 Instalando/Actualizando dependencias...${NC}"
-pip install --upgrade pip
-if pip install -r requirements.txt; then
+
+if [ ! -f "requirements.txt" ]; then
+    echo -e "${RED}❌ No se encontró el archivo requirements.txt. No se pueden instalar las dependencias.${NC}"
+    exit 1
+fi
+
+echo "Actualizando pip..."
+./venv/bin/pip install --upgrade pip > /dev/null
+
+if ./venv/bin/pip install -r requirements.txt; then
     echo -e "${GREEN}✅ Dependencias instaladas correctamente.${NC}"
 else
     echo -e "${RED}❌ Error instalando dependencias.${NC}"
@@ -71,7 +82,7 @@ echo -e "\n${GREEN}🚀 Desplegando servicio...${NC}"
 echo "El servicio se ejecutará en segundo plano (nohup)."
 echo "Logs disponibles en: server.log"
 
-nohup uvicorn combined_api:app --host 0.0.0.0 --port 8000 > server.log 2>&1 &
+nohup ./venv/bin/uvicorn combined_api:app --host 0.0.0.0 --port 8000 > server.log 2>&1 &
 
 NEW_PID=$!
 echo -e "${GREEN}✅ Servicio iniciado con PID: $NEW_PID${NC}"
