@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  aura_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aura_api_service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - API_KEY_SECRET=${API_KEY_SECRET:-super_secret_default_key}
+    volumes:
+      - hf_model_cache:/app/huggingface_cache
+      - aura_db_data:/app  # Para retener SQLite db (si la usas)
+
+volumes:
+  hf_model_cache:
+    name: aura_hf_cache
+  aura_db_data:
+    name: aura_db_data

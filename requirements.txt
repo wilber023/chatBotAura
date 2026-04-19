@@ -1,10 +1,22 @@
+# Dependencias de Core y API
 fastapi>=0.115.0
 uvicorn[standard]>=0.32.0
 pydantic>=2.10.0
-transformers>=4.46.0
+pydantic-settings>=2.5.0
+
+# Base de datos
+SQLAlchemy>=2.0.30
+
+# IA / Machine Learning (Transformers & PyTorch)
+# NOTA: En un despliegue real, PyTorch suele instalarse de otra fuente según hardware (CUDA vs CPU)
 torch>=2.5.0
+transformers>=4.46.0
 sentencepiece>=0.2.0
 protobuf>=5.29.0
 accelerate>=1.2.0
-setuptools>=80.0.0
+
+# Herramientas de Pruebas y Clientes
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0
 requests>=2.32.0
